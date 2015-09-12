@@ -8,7 +8,7 @@
 
 ## Installation:
 
-With Jupter, you can simply issue
+With Jupyter, you can simply issue
 ```bash
 jupyter nbextension install https://rawgit.com/jfbercher/small_nbextensions/master/highlighter.zip  --user
 
