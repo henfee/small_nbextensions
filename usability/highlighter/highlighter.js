@@ -1,27 +1,42 @@
 var burk = {
-    'open': '<span class="burk">',
-    'close': '</span>'
+    'open': '<div class="burk">\n',
+    'close': '</div>'
 };
 var mark = {
-    'open': '<span class="mark">',
-    'close': '</span>'
+    'open': '<div class="mark">\n',
+    'close': '</div>'
 };
+var icon = '<i class="fa fa-lightbulb-o "></i>'
 
 function highlightInCmdMode(event, highlight) {
     var cell = IPython.notebook.get_selected_cell()
     var cm = IPython.notebook.get_selected_cell().code_mirror
     var zozo = window.getSelection().toString();
-    var cell_text = cell.get_text()
-    cell_text = cell_text.replace(zozo, highlight.open + zozo + highlight.close)
+    var cell_text = cell.get_text();
+    if (zozo.length==0){
+        cell_text = highlight.open + cell_text + highlight.close+icon
+    }
+    else{
+        var identifiedText = align(zozo,cell_text)
+        cell_text = cell_text.replace(identifiedText, highlight.open + identifiedText + highlight.close)
+    }
     cell.set_text(cell_text)
     cell.render();
     return false;
 }
 
 function highlightInEditMode(event, highlight) {
-    var cm = IPython.notebook.get_selected_cell().code_mirror
+    var cell = IPython.notebook.get_selected_cell()
+    var cm = cell.code_mirror
     var zozo = cm.getSelection()
-    cm.replaceSelection(highlight.open + zozo + highlight.close)
+    if (zozo.length==0){
+        var cell_text = IPython.notebook.get_selected_cell().get_text();
+        cell_text = highlight.open + cell_text + highlight.close+icon;
+        cell.set_text(cell_text);
+    }
+    else{
+        cm.replaceSelection(highlight.open + zozo + highlight.close)
+    }
     return false;
 }
 
@@ -29,17 +44,92 @@ function removeHighlights() {
     var cell = IPython.notebook.get_selected_cell()
     var cell_text = cell.get_text()
     var ll = [mark.open, mark.close, burk.open, burk.close]
-    cell_text = cell_text.replace(/<span class="mark">([\s\S]*?)<\/span>/g, function(w, g) {
+    cell_text = cell_text.replace(/<div class="mark">\n([\s\S]*?)<\/div>(<i class="fa fa-lightbulb-o "><\/i>)?/g, function(w, g) {
         return g
     })
-    cell_text = cell_text.replace(/<span class="burk">([\s\S]*?)<\/span>/g, function(w, g) {
+    cell_text = cell_text.replace(/<div class="burk">\n([\s\S]*?)<\/div>(<i class="fa fa-lightbulb-o "><\/i>)?/g, function(w, g) {
         return g
     })
     cell.set_text(cell_text)
     cell.render();
 }
 
-// Keyboard shortcuts ******************************
+//*****************************************************************************************
+// Utilitary functions for finding a candidate corresponding text from an unformatted selection
+
+/* In case of text selection in rendered cells, the returned text retains no formatting 
+therefore, when looking for this text in the actual formatted text, we need to do a 
+kind of "fuzzy" alignment. Though there exists specialized libraries for such task, 
+we have developed here a simple heuristics that should work 90% of the time, 
+but the problem cannot get a perfect solution. 
+A first point is to replace special characters that could be interpreded with 
+a special meaning in regular expressions. Then the idea is to find the exact matches 
+ofthe longest substring from the beginning of the text, then the longest substring 
+from the end of the text. Finally, given the locations of the two substring, 
+we extract the corresponding global match in the original text. 
+*/
+function escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "#");
+    // return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    return str
+}
+
+// Extract the longest matching substring from the beginning of the text
+function exsub_up(sub, text) {
+    for (k = 0; k <= sub.length; k++) {
+        if (text.match(sub.substr(0, k)) == null) {
+            k = k - 2
+            break
+        }
+    }
+    return text.match(sub.substr(0, k + 1))
+}
+
+// Extract the longest matching substring from the end of the text
+function exsub_down(sub, text) {
+    var L = sub.length
+    try {
+        for (k = 0; k <= sub.length; k++) {
+            tst = sub.substr(L - k - 1, L);
+            if (text.match(tst) == null) {
+                // console.log(tst)
+                k = k - 1
+                break
+            }
+        }
+        return text.match(sub.substr(L - k - 1, L))
+    } catch (e) {
+        console.log('Error', e)
+        return ""
+    }
+
+}
+
+// Function that tries to find the best match of the unformatted 
+// text in the formatted one. 
+
+function align(tofind, text) {
+
+    sub = escapeRegExp(tofind)
+    textModified = escapeRegExp(text)
+    //console.log(textModified.match(sub))
+    if (textModified.match(sub) == null) {
+        a = exsub_up(sub, textModified)
+        b = exsub_down(sub, textModified)
+        return text.substr(a.index, b.index + b[0].length - a.index)
+    } else {
+        var tmpMatch = textModified.match(sub)
+        return text.substr(tmpMatch.index, tmpMatch[0].length)
+    }
+}
+//z_ini="Firstable, the [extension* _provides_ three toolbar buttons that enable highlighting a selected text _within a markdown cell_. Two different \`color schemes' are provided, which can be customized in the stylesheet `highlighter.css`. The last button the last button enables to remove all highlightings in the current cell."
+// sub_ini="the [extension* provides thr"
+// Test: align(sub_ini,z_ini)
+
+
+
+
+// ***************** Keyboard shortcuts ******************************
 
 var add_cmd_shortcuts = {
     'Alt-g': {

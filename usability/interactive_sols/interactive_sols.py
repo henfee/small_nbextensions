@@ -1,5 +1,4 @@
 from IPython.display import HTML, display, Javascript
-global cbx_id
 
 def unhide_next_cell(): 
 #used in case one wants to force display of next input cell (eg the cell with process_solution tat autohides itself)  
@@ -10,27 +9,8 @@ def unhide_next_cell():
     """
     display(Javascript(show)) 
 
-def get_cbx_id():
-    # This is to get the current checkbox id. The ids are incremented each time a checkbox is created. 
-    # The current max id is store in the notebook's metadata
-
-    get_cbx_id="""
-    var kernel = Jupyter.notebook.kernel;
-    if (kernel!=undefined){
-        var command = "cbx_id = '" +  Jupyter.notebook.metadata.interactive_sols.cbx_id + "'";
-        kernel.execute(command);
-        console.log('cfg.cbx_id',Jupyter.notebook.metadata.interactive_sols.cbx_id);}
-    """  
-
-    # Ater execution (and display), we will get the saved value for cbx_id
-    display(Javascript(get_cbx_id)) #get the current id in variable cbx_id
-
-
 def process_solution(nb_cells_to_process=1):
 
-    global cbx_id
-    cbx_id=int(cbx_id)
-    cbx_id+=1
     #mychbox is a standard checkbox
     myhchbox="""
     Show solution: <input type="checkbox"  id="myCheck{0}" 
@@ -74,11 +54,18 @@ def process_solution(nb_cells_to_process=1):
        </script>
     """   
     
+    # This is to get the current checkbox id. The ids are incremented each time a checkbox is created. 
+    # The current max id is store in the notebook's metadata
 
-    #print(cbx_id)
+    get_cbx_id="""
+    var kernel = Jupyter.notebook.kernel;
+    if (kernel!=undefined){
+        var command = "cbx_id = '" +  Jupyter.notebook.metadata.interactive_sols.cbx_id + "'";
+        kernel.execute(command);
+        console.log('cfg.cbx_id',Jupyter.notebook.metadata.interactive_sols.cbx_id);}
+    """  
+
+    # 
+    display(Javascript(get_cbx_id)) #get the current id in variable cbx_id
     display(HTML(myhchboxb.format(cbx_id,nb_cells_to_process))) # display the checkbox
-
-get_cbx_id() #At first execution, get the current (initial) value of cbx_id. Then, each time a checkbox is created, 
-#this variable will be incremented, and stored in the metadata
-
 

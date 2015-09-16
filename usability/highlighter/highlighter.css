@@ -1,11 +1,13 @@
 .mark {
     background-color: yellow;
     color: red;
+    display:inline-block;
 }
 
 .burk {
     background-color: red;
     color: yellow;
+    display:inline-block;
 }
 .btnw{
     background-color: white;
