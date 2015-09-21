@@ -2,7 +2,7 @@
 ## interactive_sols extension:
 
 
-This extension enable to hide or reveal several consecutive cells, using a small button. State of cells (hidden or not) and of the widget are saved in the notebook's metadata, which enable to restore the state of the notebook at (re)load. This extension is designed to let students work on a subject, before looking at tips or at the solution. 
+This extension enables hiding or revealing several consecutive cells, using a small button. State of cells (hidden or not) and of the widget are saved in the notebook's metadata, which enable to restore the state of the notebook at (re)load. This extension is designed to let students work on a subject, before looking at tips or at the solution. 
 
 Here is an example: we mask/unmask two consecutive cells:
 ```
