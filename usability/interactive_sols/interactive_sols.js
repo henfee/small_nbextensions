@@ -59,7 +59,8 @@ var hide_input = function (nb_max) {
              cell.element.find("div.output").hide()
                                              }
         if (cell instanceof TextCell) {
-             cell.element.find("div.text_cell_render").hide()
+             //cell.element.find("div.text_cell_render").hide()
+             cell.element.find("div.inner_cell").hide()
                                               }
                         };    
                 };
@@ -83,7 +84,8 @@ var show_input = function (nb_max) {
              cell.element.find("div.output").show()
                                              }
         if (cell instanceof TextCell) {
-             cell.element.find("div.text_cell_render").show()
+             //cell.element.find("div.text_cell_render").show()
+             cell.element.find("div.inner_cell").show()
                                       }
                         };    
                 };
@@ -251,6 +253,7 @@ var interactive_init_cells = function() {
             if (cell instanceof TextCell) {
                 //console.log("hiding text cell... ",i);
                 cell.element.find("div.text_cell_render").hide()
+                
             }
         }
     }
