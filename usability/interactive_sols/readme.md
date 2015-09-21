@@ -2,7 +2,15 @@
 ## interactive_sols extension:
 
 
-This extension enable to hide or reveal several consecutive cells, using a small button. State of cells (hidden or not) and of the widget are saved in the notebook's metadata, which enable to restore the state of the notebook at (re)load. This extension is designed to let students work on a subject, before looking at tips or at the solution. The package provides both the javascript extension
+This extension enable to hide or reveal several consecutive cells, using a small button. State of cells (hidden or not) and of the widget are saved in the notebook's metadata, which enable to restore the state of the notebook at (re)load. This extension is designed to let students work on a subject, before looking at tips or at the solution. 
+
+Here is an example: we mask/unmask two consecutive cells:
+```
+process_solution(2)
+```
+![](image.gif)
+
+The package provides both
 - interactive_sols.js [the actual extension]
 - interactive_sols.css [stylesheet where the widgets can be customized]
 and a python file, which defines a function `process_solution` which defines the number of cells to mask:
@@ -17,16 +25,10 @@ It works as follows: either load the python function via a `%run`, or by loading
 from interactive_sols import process_solution, unhide_next_cell, unhide_all_cells
 ```
 
-
 Then, the user can issue the command `process_solution(n)`, where `n` is an integer (n defaults to 1). In such case, the current cell with the process_solution command will be replaced by a (pretty) checkbox. Checking this checkbox will hide the n following cells. Some efforts have been done to ensure that the states (hidden/shown) of the cells as well as the checked state of checkboxes survive to reloads of the page, restarts of the kernel, and clear of cells outputs. 
 
 Under the hood, the checkboxes are created with some lines of html/css, a counter for defining unique ids is implemented andstored in the notebook's metadata. 
 
-Here is an example: we mask/unmask two next cells:
-```
-process_solution(2)
-```
-![](image.gif)
 
 ## Installation:
 
