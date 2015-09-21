@@ -2,6 +2,6 @@ Type: IPython Notebook Extension
 Name: highlighter
 Description: Enable to highlight select text in a markdown cell
 Link: readme.md
-Icon: icon.gif
+Icon: icon.png
 Main: highlighter.js
 Compatibility: 3.x, Jupyter (4.x) 

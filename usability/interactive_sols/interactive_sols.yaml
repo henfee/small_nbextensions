@@ -1,0 +1,7 @@
+Type: IPython Notebook Extension
+Name: interactive_sols
+Description: Enable to mask/unmask solution cells
+Link: readme.md
+Icon: icon.png
+Main: interactive_sols.js
+Compatibility: 3.x, Jupyter (4.x) 
