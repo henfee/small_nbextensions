@@ -252,7 +252,8 @@ var interactive_init_cells = function() {
             }
             if (cell instanceof TextCell) {
                 //console.log("hiding text cell... ",i);
-                cell.element.find("div.text_cell_render").hide()
+                //cell.element.find("div.text_cell_render").hide()
+                cell.element.find("div.inner_cell").hide()
                 
             }
         }
