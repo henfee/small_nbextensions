@@ -1,30 +1,12 @@
-/*
-Three different highlighting schemes "mark"|"burk"|"girk" are defined in the css highlighter.css
-The following functions highlight the selected text, according to the scheme chosen by a menu button. More precisely, they replace selected text, both in edit or command mode, by 
-a span tag with a given class and the selected text as data.
-if no text is selected, then the whole cell is highlighted (using a div tag and a class corresponding to the chosen scheme). A function to remove all hihlightings is also provided. 
-*/
-
-function removeFullCellHighlight(cell_text) {
-    cell_text = cell_text.replace(/<div class=(?:"mark"|"burk"|"girk")>([\s\S]*?)<\/div><i class="fa fa-lightbulb-o "><\/i>/g, function(w, g) {
-        return g
-    })
-    return cell_text
-}
-
-function fullCellHighlight(cell_text,scheme) {
-    cell_text=removeFullCellHighlight(cell_text);
-    return '<div class='+'"'+scheme+'"'+'>'+cell_text+'</div><i class="fa fa-lightbulb-o "><\/i>'
-}
-
-function highlight(text,scheme) {
-    var scheme=scheme;
-    // replace by a span, wile preserving leading and trailing spaces
-    var rep=text.replace(/(\S[\S\s]*\S)/,function (w,internal_text){
-        return '<span class='+'"'+scheme+'"'+'>'+internal_text+'</span>'})
-    return rep
-    //return '<span class='+'"'+scheme+'"'+'>'+text+'</span>'
-}
+var burk = {
+    'open': '<div class="burk">\n',
+    'close': '</div>'
+};
+var mark = {
+    'open': '<div class="mark">\n',
+    'close': '</div>'
+};
+var icon = '<i class="fa fa-lightbulb-o "></i>'
 
 
 function add_div(text) {
@@ -36,44 +18,50 @@ function rem_div(text) {
     return text.replace(/^<div>([\S\s]*)<\/div>$/,function (w,g){return g})    
 }
 
-function highlightInCmdMode(event, scheme) {
+function highlightInCmdMode(event, highlight) {
     var cell = IPython.notebook.get_selected_cell()
     var cm = IPython.notebook.get_selected_cell().code_mirror
-    var selectedText = window.getSelection().toString();
+    var zozo = window.getSelection().toString();
     var cell_text = cell.get_text();
-    if (selectedText.length==0){
-        cell_text=fullCellHighlight(cell_text,scheme);
+    if (zozo.length==0){
+        cell_text=rem_div(cell_text);
+        cell_text = highlight.open + cell_text + highlight.close+icon
     }
     else{
-        var identifiedText = align(selectedText,cell_text);
-        cell_text = cell_text.replace(identifiedText,highlight(identifiedText,scheme));
+        var identifiedText = align(zozo,cell_text)
+        cell_text = cell_text.replace(identifiedText, highlight.open + identifiedText + highlight.close)
     }
-    cell.set_text(cell_text);
+    cell.set_text(add_div(cell_text))
     cell.render();
     return false;
 }
 
-function highlightInEditMode(event, scheme) {
+function highlightInEditMode(event, highlight) {
     var cell = IPython.notebook.get_selected_cell()
     var cm = cell.code_mirror
-    var selectedText = cm.getSelection()
-    if (selectedText.length==0){
-        var cell_text = cell.get_text();
-        cell_text=fullCellHighlight(cell_text,scheme);
+    var zozo = cm.getSelection()
+    if (zozo.length==0){
+        var cell_text = IPython.notebook.get_selected_cell().get_text();
+        cell_text = highlight.open + cell_text + highlight.close+icon;
         cell.set_text(cell_text);
     }
     else{
-        cm.replaceSelection(highlight(selectedText,scheme))
+        cm.replaceSelection(highlight.open + zozo + highlight.close)
+        cell.set_text(add_div(cell.get_text()))
     }
     return false;
 }
 
 function removeHighlights() {
-    var cell = IPython.notebook.get_selected_cell();
-    var cell_text = removeFullCellHighlight(cell.get_text());
-    cell_text = cell_text.replace(/<span class=(?:"mark"|"burk"|"girk")>([\s\S]*?)<\/span>/g, 
-        function(w, g) {return g}
-)
+    var cell = IPython.notebook.get_selected_cell()
+    var cell_text = rem_div(cell.get_text());
+    var ll = [mark.open, mark.close, burk.open, burk.close]
+    cell_text = cell_text.replace(/<div class="mark">\n([\s\S]*?)<\/div>(<i class="fa fa-lightbulb-o "><\/i>)?/g, function(w, g) {
+        return g
+    })
+    cell_text = cell_text.replace(/<div class="burk">\n([\s\S]*?)<\/div>(<i class="fa fa-lightbulb-o "><\/i>)?/g, function(w, g) {
+        return g
+    })
     cell.set_text(cell_text)
     cell.render();
 }
@@ -88,7 +76,7 @@ we have developed here a simple heuristics that should work 90% of the time,
 but the problem cannot get a perfect solution. 
 A first point is to replace special characters that could be interpreded with 
 a special meaning in regular expressions. Then the idea is to find the exact matches 
-on the longest substring from the beginning of text, then the longest substring 
+ofthe longest substring from the beginning of the text, then the longest substring 
 from the end of the text. Finally, given the locations of the two substring, 
 we extract the corresponding global match in the original text. 
 */
@@ -146,6 +134,10 @@ function align(tofind, text) {
         return text.substr(tmpMatch.index, tmpMatch[0].length)
     }
 }
+//z_ini="Firstable, the [extension* _provides_ three toolbar buttons that enable highlighting a selected text _within a markdown cell_. Two different \`color schemes' are provided, which can be customized in the stylesheet `highlighter.css`. The last button the last button enables to remove all highlightings in the current cell."
+// sub_ini="the [extension* provides thr"
+// Test: align(sub_ini,z_ini)
+
 
 
 
@@ -197,37 +189,33 @@ IPython.keyboard_manager.command_shortcuts.add_shortcuts(add_cmd_shortcuts);
 
 //******Toolbar buttons *************************************************
 
-function highlightText(scheme) {
+function highlightText(highlight) {
     var cell = IPython.notebook.get_selected_cell();
     var rendered = cell.rendered;
-    if (rendered) highlightInCmdMode("", scheme);
-    else highlightInEditMode("", scheme);
+    if (rendered) highlightInCmdMode("", highlight);
+    else highlightInEditMode("", highlight);
 }
 
-           
+var test = ' <div class="btn-group" role="toolbar"> <button type="button" class="btn btn-group btn-default" style="font-weight:bold;"  \
+             href="#" id="highlight1">\
+             <i class="fa fa-paint-brush"></i>  G</button>\
+             <button type="button" class="btn btn-group btn-default" style="font-weight:bold;margin-left:0" \
+             href="#" id="highlight2">\
+             <i class="fa fa-flip-horizontal fa-paint-brush"></i>H </button>\
+             <button type="button" class="btn btn-default" style="font-weight:bold;margin-left:0"\
+             href="#" id="highlight3">\
+            <i class="fa fa-flip-horizontal fa-paint-brush" style="color:#cccccc"></i>\
+              <i class="fa fa-times" ></i>\
+             </button></div>'
 
-var test = ' <div id="hgl" class="btn-group" role="toolbar"> \
-<button type="button" class="btn btn-group btn-default" id="higlighter_menu" href="#">\
-<i class="fa fa-paint-brush"></i> <i id="menu-hgl" class="fa fa-caret-right"></i>  </button>\
-<div id="submenu" class="btn-group" style="font-weight:bold;margin-left:0" > \
-    <button type="button" class="btn btn-group btn-default burk" style="font-weight:bold;margin-left:0"  href="#" id="b1"> <i class="fa fa-paint-brush"></i>  </button>\
-    <button type="button" class="btn btn-group btn-default mark" style="font-weight:bold;margin-left:0"  href="#" id="b2"><i class="fa fa-paint-brush"></i>  </button>\
-    <button type="button" class="btn btn-group btn-default girk" style="font-weight:bold;margin-left:0"  href="#" id="b3"><i class="fa fa-paint-brush"></i>  </button>\
-<button type="button" class="btn btn-default" style="font-weight:bold;margin-left:0"\
- href="#" id="remove_highlights"> <i class="fa fa-paint-brush" style="color:#cccccc"></i>\
-     <i class="fa fa-times"></i> </button></div>\
-                 </div>'             
-             
 
 $("#maintoolbar-container").append(test);
 $("#test").css({
     'padding': '5px'
 });
 
-$("#submenu").hide(); // initially hide the submenu
-
 //buttons initial css -- shall check if this is really necessary
-$("#higlighter_menu").css({
+$("#highlight1").css({
     'padding': '2px 8px',
     'display': 'inline-block',
     'border': '1px solid',
@@ -235,27 +223,37 @@ $("#higlighter_menu").css({
     'font-weight': 'bold',
     'text-align': 'center',
     'vertical-align': 'middle',
-    'margin-left': '0px',
-    'margin-right': '0px'
+    'margin-left': '0px'
+})
+$("#highlight2").css({
+    'padding': '2px 8px',
+    'display': 'inline-block',
+    'border': '1px solid',
+    'border-color': '#cccccc',
+    'font-weight': 'bold',
+    'text-align': 'center',
+    'vertical-align': 'middle',
+    'margin-left': '0px'
 })
 
 
-//Actions
-
-
-$("#higlighter_menu")
-    .on('click', function() {
-    $("#submenu").toggle();
-    if($("#menu-hgl").hasClass("fa-caret-right")){ 
-        $("#menu-hgl").switchClass("fa-caret-right","fa-caret-left") 
-    } 
-    else {
-        $("#menu-hgl").switchClass("fa-caret-left","fa-caret-right")
-    }
+$("#highlight1").on('mouseout', function() {
+        $(this).addClass("btn btn-default")
+            .removeClass("mark")
     })
-.tooltip({
-        title: 'Highlight selected text',
-        placement: "bottom",     
+    .on('mouseover', function() {
+        $(this).removeClass("btn btn-default ")
+            .addClass("mark")
+            //    .css({ 'padding': '2px 8px', 'display': 'inline-block','border': '1px solid',
+            //            'border-color':'#cccccc',  'font-weight': 'bold', 
+            //  'text-align': 'center',   'vertical-align': 'middle'
+            //  }) 
+    })
+    .on('click', function() {
+        highlightText(mark)
+    })
+    .tooltip({
+        title: 'Highlight selected text (shortcut: Alt-g)',
         trigger: "hover",
         delay: {
             show: 500,
@@ -263,49 +261,36 @@ $("#higlighter_menu")
         }
     });
 
-$("#b1")
-    .on('click', function() {
-        highlightText("burk")
+$("#highlight2").on('mouseout', function() {
+        $(this).addClass("btn btn-default")
+            .removeClass("burk")
     })
-     .on('mouseover', function() {
-        $("#b1").removeClass("btn btn-default").addClass("btn burk")
-            //.addClass("burk");
-}) //!!
-    .on('mouseout', function() {
-       $("#b1").addClass("btn btn-default")
-})  
-
-
-$("#b2")
-    .on('click', function() {
-        highlightText("mark")
+    .on('mouseover', function() {
+        $(this).removeClass("btn btn-default ")
+            .addClass("burk")
+            //    .css({ 'padding': '2px 8px', 'display': 'inline-block','border': '1px solid',
+            //            'border-color':'#cccccc',  'font-weight': 'bold',
+            //  'text-align': 'center',   'vertical-align': 'middle'
+            //  }) 
     })
-     .on('mouseover', function() {
-    $("#b2").removeClass("btn btn-default").addClass("btn mark")
-}) //!!
-    .on('mouseout', function() {
-       $("#b2").addClass("btn btn-default")
-})  
-
-$("#b3")
     .on('click', function() {
-        highlightText("girk")
+        highlightText(burk)
     })
-     .on('mouseover', function() {
-       $(this).removeClass("btn btn-default").addClass("btn girk")
-}) //!!
-    .on('mouseout', function() {
-       $(this).addClass("btn btn-default")
-})  
+    .tooltip({
+        title: 'Highlight selected text (shortcut: Alt-h)',
+        trigger: "hover",
+        delay: {
+            show: 500,
+            hide: 50
+        }
+    });
 
-
-$("#remove_highlights")
+$("#highlight3")
     .on('click', function() {
         removeHighlights()
     })
     .tooltip({
         title: 'Remove highlightings in selected cell',
-        placement:"bottom",
         trigger: "hover",
         delay: {
             show: 500,
