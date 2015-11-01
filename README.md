@@ -17,9 +17,14 @@ exercise, exercise2 and move_selected_cells make use of the [`rubberband` extens
 
 Of course, do not miss my big extension [latex_envs](https://github.com/jfbercher/latex_envs) which enables to use some LaTeX structures (eg theorems/itemize/etc) directly in the notebook. It also features automatic numerotation, labels and references, and some support for (bibTeX) bibliography. 
 
-**Installation** In all cases, the extensions can be installed from a zip file available in the repo, using
+**Installation** 
+In all cases, the extensions can be installed from a zip file available in the repo, using
+
 ```jupyter nbextension install https://rawgit.com/jfbercher/small_nbextensions/master/name_of_the_extension.zip```
+
 and then activated via
-```jupyter nbextension enable usability/name_of_the_extension//name_of_the_extension`
-(or maybe main at the end rather than `name_of_the_extension` for `move_selected_cells` and `rubberband`.
+
+```jupyter nbextension enable usability/name_of_the_extension//name_of_the_extension```
+
+(or maybe `main` at the end rather than `name_of_the_extension` for `move_selected_cells` and `rubberband`.
 
