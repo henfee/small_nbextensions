@@ -162,7 +162,7 @@ var liveNotebook = !(typeof IPython == "undefined")
           $('#toc-wrapper').css('height','100%');
           $('#toc').css('height', $('#toc-wrapper').height()-30);         
         }
-        if (ui.position.left<=0) {        
+        if (ui.position.left<=0) {      
           ui.position.left = 0;
           ui.position.top = liveNotebook ? $('#header').height() : 0;          
         }
@@ -242,7 +242,7 @@ var liveNotebook = !(typeof IPython == "undefined")
       if (IPython.notebook.metadata.toc !== undefined) {
         if (IPython.notebook.metadata.toc['toc_section_display']!==undefined)  {  
             $('#toc').css('display',IPython.notebook.metadata.toc['toc_section_display'])
-            $('#toc').css('height', $('#toc-wrapper').height()-30)
+            $('#toc').css('height', $('#toc-wrapper').height()-50)
             if (IPython.notebook.metadata.toc['toc_section_display']=='none'){
               $('#toc-wrapper').addClass('closed');
               $('#toc-wrapper').css({height: 40});
@@ -271,16 +271,18 @@ var liveNotebook = !(typeof IPython == "undefined")
     // Initial style
     ///sideBar = cfg['sideBar']
     if (cfg.sideBar) {
-      console.log("cfgSideBar")
       $('#toc-wrapper').addClass('sidebar-wrapper');
       if (!liveNotebook) {
         $('#toc-wrapper').css('width','202px');
         $('#notebook-container').css('margin-left','212px');
-        $('#toc-wrapper').css('height','100%');}
+        $('#toc-wrapper').css('height','100%');
+        $('#toc').css('height', $('#toc-wrapper').height()-30)
+      }
       else{
         $('#notebook-container').css('width',$('#notebook').width()-$('#toc-wrapper').width()-30);
         $('#notebook-container').css('margin-left',$('#toc-wrapper').width()+10);
         $('#toc-wrapper').css('height',$('#site').height());
+        $('#toc').css('height', $('#toc-wrapper').height()-30)
         }
       setTimeout(function(){$('#toc-wrapper').css('top',liveNotebook ? $('#header').height() : 0);}, 500) //wait a bit
       $('#toc-wrapper').css('left',0);
@@ -462,9 +464,6 @@ var table_of_contents = function (cfg,st) {
   var toggle_toc = function (cfg,st) {
     // toggle draw (first because of first-click behavior)
     //$("#toc-wrapper").toggle({'complete':function(){
-      console.log("In toggle_toc")
-      console.log("cfg",cfg)
-      console.log("st",st)
     $("#toc-wrapper").toggle({
       'progress':function(){  
         if (cfg.sideBar==true) {
@@ -488,7 +487,7 @@ var table_of_contents = function (cfg,st) {
       table_of_contents(cfg,st);
       }
     });
-    
+  
   };
   
 //var out=$.ajax({url:"/nbextensions/usability/toc2/toc2.js", async:false})

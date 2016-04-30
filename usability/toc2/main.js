@@ -55,19 +55,33 @@ define(["require", "jquery", "base/js/namespace",  'services/config',
             if (config.data.hasOwnProperty(key)){
                 cfg[key] = config.data[key];
 }
-        }
-        IPython.notebook.metadata.toc = cfg; //save in present nb metadata (then can be modified per document)
+        }        
         ///threshold = cfg['threshold'];
         ///toc_cell=cfg['toc_cell'];
         ///number_sections = cfg['number_sections'];
         //$('#toc-wrapper').css('display',cfg['toc-wrapper_display']) //ensure display is done as noted in config
+        if (typeof cfg.sideBar == "undefined") {
+          console.log("Updating sidebar")
+          cfg.sideBar=true;
+        }
+      IPython.notebook.metadata.toc = cfg; //save in present nb metadata (then can be modified per document)        
         $('#toc-wrapper').css('display',cfg['toc_window_display'] ? 'block' : 'none') //ensure display is done as noted in config
     };
 
     // config may be specified at system level or at document level.
     if (IPython.notebook.metadata.toc !== undefined){ //configuration saved in nb
         console.log("config stored in nb")
-        cfg = IPython.notebook.metadata.toc;
+        for (var key in cfg) {
+            if (typeof IPython.notebook.metadata.toc[key] !=  "undefined"){
+                cfg[key] = IPython.notebook.metadata.toc[key]
+            }
+        }
+        //cfg = IPython.notebook.metadata.toc;
+        if (typeof cfg.sideBar == "undefined") {
+          console.log("Updating sidebar")
+          cfg.sideBar=true;
+          IPython.notebook.metadata.toc.sideBar=true;
+        }
         ///threshold = cfg['threshold'];
         ///toc_cell=cfg['toc_cell'];
         ///number_sections = cfg['number_sections'];
@@ -117,8 +131,8 @@ define(["require", "jquery", "base/js/namespace",  'services/config',
   };
   
   var load_ipython_extension = function () {
-    load_css(); console.log("Loading css")
-    toc_button(); console.log("Adding toc_button")
+    load_css(); //console.log("Loading css")
+    toc_button(); //console.log("Adding toc_button")
     
     cfg = read_config(cfg); 
     table_of_contents(cfg,st); 
@@ -133,26 +147,14 @@ define(["require", "jquery", "base/js/namespace",  'services/config',
     $([IPython.events]).on("notebook_loaded.Notebook", function(){ // curiously, the event is not always fired or detected
                                                        // thus I rely on kernel_ready.Kernel to read the initial config 
                                                        // and render the first  table of contents
-            cfg = read_config(cfg); 
-            table_of_contents(cfg,st); 
-        // render toc for each markdown cell modification
-        //$([IPython.events]).on("rendered.MarkdownCell", table_of_contents);
-        $([IPython.events]).on("rendered.MarkdownCell", 
-          function(){table_of_contents(cfg,st);});
-            console.log("toc2 initialized (via notebook_loaded)")
-        st.extension_initialized=true  ; // flag to indicate that initialization was done
+        table_of_contents(cfg,st); 
+        console.log("toc2 initialized (via notebook_loaded)")
 })
 
     $([IPython.events]).on("kernel_ready.Kernel", function(){
       console.log("kernel_ready.Kernel")
-        if (!st.extension_initialized){
-            cfg = read_config(cfg); 
-            table_of_contents(cfg,st); 
-            // render toc for each markdown cell modification
-            $([IPython.events]).on("rendered.MarkdownCell", 
-              function(){table_of_contents(cfg,st);});
-            console.log("toc2 initialized (via kernel_ready)")
-        }
+      table_of_contents(cfg,st); 
+      console.log("toc2 initialized (via kernel_ready)")
     });
 
   };

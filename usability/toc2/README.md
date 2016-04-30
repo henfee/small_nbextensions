@@ -4,8 +4,8 @@
 
 The toc2 extension enables to collect all running headers and display them in a floating window or a sidebar. The extension is also draggable, resizable, collapsable, dockable and features automatic numerotation with unique links ids, and an optional toc cell. Finally, the toc can preserved when exporting to html.
 
+![](demo.gif)
 
-![](icon.png)
 
 The table of contents is automatically updated when modifications occur in the notebook. The toc window can be moved and resized. It can be docked as a sidebar or dragged from the sidebar into a floating window. The table of contents can be collapsed or the window can be completely hidden. The position, dimensions, and states (that is 'collapsed' and 'hidden' states) are remembered (actually stored in the notebook's metadata) and restored on the next session. The toc window also provides two links in its header for further functionalities:
 
