@@ -171,8 +171,10 @@ $('#Navigate_menu').prepend($('<li/>').append($('<a/>').attr('href','#').text("u
           $('#notebook-container').css('width',$('#notebook').width()-$('#toc-wrapper').width()-30);
           ui.position.top = liveNotebook ? $('#header').height() : 0;          
           ui.position.left = 0;
-          $('#toc-wrapper').css('height',$('#site').height());
-          //$('#toc-wrapper').css('height','96%');
+          if(liveNotebook){
+            $('#toc-wrapper').css('height',$('#site').height());}
+          else{  
+          $('#toc-wrapper').css('height','96%');}
           $('#toc').css('height', $('#toc-wrapper').height()-$('#toc-header').height());         
         }
         if (ui.position.left<=0) {      
@@ -366,7 +368,6 @@ $('#Navigate_menu').prepend($('<li/>').append($('<a/>').attr('href','#').text("u
 //                                                   now threshold is a global variable 
 var table_of_contents = function (cfg,st) {
 
-console.log("call toc")
     if(st.rendering_toc_cell) { // if toc_cell is rendering, do not call  table_of_contents,                             
         st.rendering_toc_cell=false;  // otherwise it will loop
         return}
@@ -467,7 +468,7 @@ console.log("call toc")
 
  
      // update toc element
-     console.log("updating toc",ul)
+     
      $("#toc").empty().append(ul);   
 
      if (cfg.navigate_menu) {
