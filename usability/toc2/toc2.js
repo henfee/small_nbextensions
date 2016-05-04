@@ -50,19 +50,59 @@ var liveNotebook = !(typeof IPython == "undefined")
     return d;
   };
   
-  var create_navigate_menu = function(callback){
-  	$('#kernel_menu').parent().after('<li id="Navigate"/>')
-	$('#Navigate').addClass('dropdown').append($('<a/>').attr('href','#').attr('id','Navigate_sub'))
-	$('#Navigate_sub').text('Navigate').addClass('dropdown-toggle').attr('data-toggle','dropdown')
-	$('#Navigate').append($('<ul/>').attr('id','Navigate_menu').addClass('dropdown-menu'))
-  callback && callback();
+  // extra download as html with toc menu (needs IPython kernel)
+  function addSaveAsWithToc() {
+     var saveAsWithToc = $('#save_html_with_toc').length == 0
+     var IPythonKernel = (IPython.notebook.kernel.name == "python2" || IPython.notebook.kernel.name == "python3")
+     if (IPythonKernel) {
+         $('#save_checkpoint').after("<li id='save_html_with_toc'/>")
+         $('#save_html_with_toc').append($('<a/>').text('Save as HTML (with toc)').attr("href", "#"))
+         $('#save_html_with_toc').click(function() {
+             var IPythonKernel = (IPython.notebook.kernel.name == "python2" || IPython.notebook.kernel.name == "python3")
+             if (IPythonKernel) {
+                 var code = "!jupyter nbconvert '" + IPython.notebook.notebook_name + "' --template toc3"
+                 console.log(code)
+                 IPython.notebook.kernel.execute(code)
+             } else {
+                 alert("Sorry; this only works with a IPython kernel");
+                 $('#save_html_with_toc').remove();
+             }
+         })
+     }
   }
-/*
-zz=$('#toc-level0').clone()
-$('#Navigate_menu').append(zz)
-zz.find('ul').css('list-style-type', 'none');
-$('#Navigate_menu').prepend($('<li/>').append($('<a/>').attr('href','#').text("uuyuy")))
-*/
+
+
+  var create_navigate_menu = function(callback) {
+      $('#kernel_menu').parent().after('<li id="Navigate"/>')
+      $('#Navigate').addClass('dropdown').append($('<a/>').attr('href', '#').attr('id', 'Navigate_sub'))
+      $('#Navigate_sub').text('Navigate').addClass('dropdown-toggle').attr('data-toggle', 'dropdown')
+      $('#Navigate').append($('<ul/>').attr('id', 'Navigate_menu').addClass('dropdown-menu')
+          .append($("<div/>").attr("id", "navigate_menu").addClass('toc')))
+
+      if (typeof IPython.notebook.metadata['nav_menu'] != "undefined") {
+          $('#Navigate_menu').css(IPython.notebook.metadata['nav_menu'])
+          $('#navigate_menu').css('width', $('#Navigate_menu').css('width'))
+          $('#navigate_menu').css('height', $('#Navigate_menu').height())
+      } else {
+          IPython.notebook.metadata.nav_menu = {}
+      }
+
+      $('#Navigate_menu').resizable({
+          resize: function(event, ui) {
+              $('#navigate_menu').css('width', $('#Navigate_menu').css('width'))
+              $('#navigate_menu').css('height', $('#Navigate_menu').height())
+          },
+          stop: function(event, ui) {
+              IPython.notebook.metadata.nav_menu['width'] = $('#Navigate_menu').css('width')
+              IPython.notebook.metadata.nav_menu['height'] = $('#Navigate_menu').css('height')
+          }
+      })
+
+      callback && callback();
+  }
+
+
+
   var create_toc_div = function (cfg,st) {
     var toc_wrapper = $('<div id="toc-wrapper"/>')
     .append(
@@ -286,28 +326,29 @@ $('#Navigate_menu').prepend($('<li/>').append($('<a/>').attr('href','#').text("u
     // Initial style
     ///sideBar = cfg['sideBar']
     if (cfg.sideBar) {
-      $('#toc-wrapper').addClass('sidebar-wrapper');
-      if (!liveNotebook) {
-        $('#toc-wrapper').css('width','202px');
-        $('#notebook-container').css('margin-left','212px');
-        $('#toc-wrapper').css('height','96%');
-        $('#toc').css('height', $('#toc-wrapper').height()-$('#toc-header').height())
-      }
-      else{
-	if (cfg.toc_window_display){
-		$('#notebook-container').css('width',$('#notebook').width()-$('#toc-wrapper').width()-30);
-		$('#notebook-container').css('margin-left',$('#toc-wrapper').width()+10);		
-		//$('#toc').css('height', $('#toc-wrapper').height()-$('#toc-header').height())
-		}
-		setTimeout(function(){
-			$('#toc-wrapper').css('height',$('#site').height());
-			$('#toc').css('height', $('#toc-wrapper').height()-$('#toc-header').height())
-		}, 500)
+        $('#toc-wrapper').addClass('sidebar-wrapper');
+        if (!liveNotebook) {
+            $('#toc-wrapper').css('width', '202px');
+            $('#notebook-container').css('margin-left', '212px');
+            $('#toc-wrapper').css('height', '96%');
+            $('#toc').css('height', $('#toc-wrapper').height() - $('#toc-header').height())
+        } else {
+            if (cfg.toc_window_display) {
+              setTimeout(function() {
+                $('#notebook-container').css('width', $('#notebook').width() - $('#toc-wrapper').width() - 30);
+                $('#notebook-container').css('margin-left', $('#toc-wrapper').width() + 30);
+                 }, 500)
+            }
+            setTimeout(function() {
+                $('#toc-wrapper').css('height', $('#site').height());
+                $('#toc').css('height', $('#toc-wrapper').height() - $('#toc-header').height())
+            }, 500)
         }
-      setTimeout(function(){$('#toc-wrapper').css('top',liveNotebook ? $('#header').height() : 0);}, 500) //wait a bit
-      $('#toc-wrapper').css('left',0);
-      
+        setTimeout(function() { $('#toc-wrapper').css('top', liveNotebook ? $('#header').height() : 0); }, 500) //wait a bit
+        $('#toc-wrapper').css('left', 0);
+
     }
+
     else {
       toc_wrapper.addClass('float-wrapper');   
     }
@@ -364,8 +405,6 @@ $('#Navigate_menu').prepend($('<li/>').append($('<a/>').attr('href','#').text("u
     } //end function process_cell_toc --------------------------
 
 // Table of Contents =================================================================
-//  var table_of_contents = function (threshold) { //small bug because being called on an event, the passed threshold was actually an event
-//                                                   now threshold is a global variable 
 var table_of_contents = function (cfg,st) {
 
     if(st.rendering_toc_cell) { // if toc_cell is rendering, do not call  table_of_contents,                             
@@ -382,7 +421,8 @@ var table_of_contents = function (cfg,st) {
     var ul = $("<ul/>").addClass("toc-item").attr('id','toc-level0');
    
      // update toc element
-     //$("#toc").empty().append(ul);
+     $("#toc").empty().append(ul);
+
 
     st.cell_toc = undefined;
    // if cfg.toc_cell=true, add and update a toc cell in the notebook. 
@@ -445,10 +485,10 @@ var table_of_contents = function (cfg,st) {
   
       // Create toc entry, append <li> tag to the current <ol>. Prepend numbered-labels to headings.
       li=$("<li/>").append( make_link( $(h), num_lbl));
+
       ul.append(li);
       $(h).prepend(num_lbl);
-      ///if( cfg.number_sections ){ $(h).prepend(num_lbl); }
-
+      
 
       //toc_cell:
       if(cfg.toc_cell) {
@@ -467,21 +507,22 @@ var table_of_contents = function (cfg,st) {
     });
 
  
-     // update toc element
-     
-     $("#toc").empty().append(ul);   
 
+     // update navigation menu
      if (cfg.navigate_menu) {
          var pop_nav = function() { //callback for create_nav_menu
-             $('#Navigate_menu').empty().append($("<div/>").attr("id", "navigate_menu").addClass('toc').append(ul.clone().attr('id', 'navigate_menu-level0')))
+             //$('#Navigate_menu').empty().append($("<div/>").attr("id", "navigate_menu").addClass('toc').append(ul.clone().attr('id', 'navigate_menu-level0')))
+             $('#navigate_menu').empty().append($('#toc-level0').clone().attr('id', 'navigate_menu-level0'))
          }
          if ($('#Navigate_menu').length == 0) {
-             create_navigate_menu(pop_nav)
+             create_navigate_menu(pop_nav);
          } else {
-             $('#Navigate_menu').empty().append($("<div/>").attr("id", "navigate_menu").addClass('toc').append(ul.clone().attr('id', 'navigate_menu-level0')))
+             pop_nav()                 
          }
+     } else { // If navigate_menu is false but the menu already exists, then remove it
+         if ($('#Navigate_menu').length > 0) $('#Navigate_sub').remove()
      }
-
+    
 
 
     if(cfg.toc_cell) {
