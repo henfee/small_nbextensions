@@ -1,6 +1,6 @@
 # small_nbextensions
 
-This repo contains some small javascript for IPython/Jupyter notebook. Usually, these extensions will 
+This repo contains some small javascript extensions for IPython/Jupyter notebook. Usually, these extensions will 
 also be uploaded to the main collection [https://github.com/ipython-contrib/IPython-notebook-extensions](https://github.com/ipython-contrib/IPython-notebook-extensions). 
 Extensions include:
 

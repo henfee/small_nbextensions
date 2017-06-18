@@ -1,0 +1,12 @@
+Type: Jupyter Notebook Extension
+Name: toggleCase 
+Description: Small demo for toggling the case of a selected text
+Link: README.md
+Icon: icon.png
+Main: demo4.js
+Compatibility: 4.x, 5.x
+Parameters:
+- name: toggleCase.hotkey
+  description: togglecase of selected text, or of current cell
+  input_type: hotkey
+  default: 'Alt-Shift-T'
